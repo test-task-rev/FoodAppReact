@@ -5,40 +5,151 @@
  * @format
  */
 
-import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { ActivityIndicator, View, StyleSheet } from 'react-native';
 
-function App() {
-  const isDarkMode = useColorScheme() === 'dark';
+// Existing screens
+import { HomeScreen } from './src/lib/component/home/HomeScreen';
+import { ProgressScreen } from './src/lib/component/progress/ProgressScreen';
+import { ProfileScreen } from './src/lib/component/profile/ProfileScreen';
+import { DailySummaryScreen } from './src/lib/component/DailySummaryScreen';
+import { FoodSearchScreen } from './src/lib/component/search/FoodSearchScreen';
+import { FoodItemDetailScreen } from './src/lib/component/search/FoodItemDetailScreen';
+import { CustomTabBar } from './src/lib/component/core/CustomTabBar';
 
+// Auth screens
+import { WelcomeScreen } from './src/lib/component/auth/WelcomeScreen';
+import { LoginScreen } from './src/lib/component/auth/LoginScreen';
+
+// Onboarding
+import { OnboardingNavigator } from './src/lib/component/onboarding/OnboardingNavigator';
+
+// Hooks and Providers
+import { AuthProvider, useAuth } from './src/lib/hooks/AuthProvider';
+import { OnboardingProvider } from './src/lib/context/OnboardingContext';
+
+// Navigation type definitions (exported for use in screens)
+export type AuthStackParamList = {
+  Welcome: undefined;
+  Login: undefined;
+  Onboarding: undefined;
+};
+
+export type AppStackParamList = {
+  MainTabs: undefined;
+  DailySummary: undefined;
+  FoodSearch: undefined;
+  FoodItemDetail: {
+    foodItem: any;
+    mealType: string;
+    entryDate: Date;
+    unitSystem: 'metric' | 'imperial';
+  };
+};
+
+const Tab = createBottomTabNavigator();
+const Stack = createNativeStackNavigator<AppStackParamList>();
+const AuthStack = createNativeStackNavigator<AuthStackParamList>();
+
+// Tab Navigator for authenticated users
+function TabNavigator() {
   return (
-    <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppContent />
-    </SafeAreaProvider>
+    <Tab.Navigator
+      tabBar={(props) => <CustomTabBar {...props} />}
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Progress" component={ProgressScreen} />
+      <Tab.Screen name="Profile" component={ProfileScreen} />
+    </Tab.Navigator>
   );
 }
 
-function AppContent() {
-  const safeAreaInsets = useSafeAreaInsets();
-
+// Stack Navigator for authenticated users
+function AppNavigator() {
   return (
-    <View style={styles.container}>
-      <NewAppScreen
-        templateFileName="App.tsx"
-        safeAreaInsets={safeAreaInsets}
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: true,
+      }}
+    >
+      <Stack.Screen
+        name="MainTabs"
+        component={TabNavigator}
+        options={{ headerShown: false }}
       />
-    </View>
+      <Stack.Screen
+        name="DailySummary"
+        component={DailySummaryScreen}
+        options={{ title: 'Daily Summary' }}
+      />
+      <Stack.Screen
+        name="FoodSearch"
+        component={FoodSearchScreen}
+        options={{ title: 'Search Food' }}
+      />
+      <Stack.Screen
+        name="FoodItemDetail"
+        component={FoodItemDetailScreen}
+        options={{ title: 'Food Details' }}
+      />
+    </Stack.Navigator>
+  );
+}
+
+// Stack Navigator for unauthenticated users
+function AuthNavigator() {
+  return (
+    <AuthStack.Navigator
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <AuthStack.Screen name="Welcome" component={WelcomeScreen} />
+      <AuthStack.Screen name="Login" component={LoginScreen} />
+      <AuthStack.Screen name="Onboarding" component={OnboardingNavigator} />
+    </AuthStack.Navigator>
+  );
+}
+
+// Root navigator that switches between auth and app
+function RootNavigator() {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#007AFF" />
+      </View>
+    );
+  }
+
+  return isAuthenticated ? <AppNavigator /> : <AuthNavigator />;
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <OnboardingProvider>
+        <NavigationContainer>
+          <RootNavigator />
+        </NavigationContainer>
+      </OnboardingProvider>
+    </AuthProvider>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  loadingContainer: {
     flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
   },
 });
 
