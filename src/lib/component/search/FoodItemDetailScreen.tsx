@@ -17,6 +17,7 @@ import { usePortionFormatter } from '../../hooks/formatters/usePortionFormatter'
 import { useFoodLog } from '../../hooks/useFoodLog';
 import { FoodFeedback } from './FoodFeedback';
 import { Card } from '../core/Card';
+import { NutritionItem } from '../core/NutritionItem';
 import { AppColors } from '../../theme/colors';
 import { Spacing } from '../../theme/spacing';
 
@@ -26,12 +27,13 @@ type FoodItemDetailRouteProp = RouteProp<{
     mealType: MealType;
     entryDate: Date;
     unitSystem: UnitSystem;
+    onSuccess?: () => void;
   };
 }, 'FoodItemDetail'>;
 
 export const FoodItemDetailScreen: React.FC = () => {
   const route = useRoute<FoodItemDetailRouteProp>();
-  const { foodItem, mealType, entryDate, unitSystem } = route.params;
+  const { foodItem, mealType, entryDate, unitSystem, onSuccess } = route.params;
   const navigation = useNavigation();
   const { addFoodLog } = useFoodLog();
   const portionFormatter = usePortionFormatter(unitSystem);
@@ -73,6 +75,7 @@ export const FoodItemDetailScreen: React.FC = () => {
       });
 
       navigation.goBack();
+      onSuccess?.();
     } catch (error) {
       console.error('Failed to save food log:', error);
       setIsSaving(false);
@@ -89,45 +92,6 @@ export const FoodItemDetailScreen: React.FC = () => {
           <Text style={styles.foodName}>{foodItem.foodName}</Text>
           <Text style={styles.perServing}>Per 100{unitLabel}</Text>
         </View>
-
-        {/* Nutrition Info Per 100g/100oz */}
-        <Card style={styles.nutritionCard}>
-          <NutritionRow
-            label="Calories"
-            value={Math.round(foodItem.calories)}
-            unit="cal"
-            color={AppColors.warning}
-          />
-          <View style={styles.divider} />
-          <NutritionRow
-            label="Protein"
-            value={foodItem.protein.toFixed(1)}
-            unit="g"
-            color={AppColors.info}
-          />
-          {foodItem.carbohydrates > 0 && (
-            <>
-              <View style={styles.divider} />
-              <NutritionRow
-                label="Carbs"
-                value={foodItem.carbohydrates.toFixed(1)}
-                unit="g"
-                color={AppColors.accent}
-              />
-            </>
-          )}
-          {foodItem.fat > 0 && (
-            <>
-              <View style={styles.divider} />
-              <NutritionRow
-                label="Fat"
-                value={foodItem.fat.toFixed(1)}
-                unit="g"
-                color={AppColors.secondary}
-              />
-            </>
-          )}
-        </Card>
 
         {/* Portion Selection */}
         <Card style={styles.portionCard}>
@@ -206,29 +170,33 @@ export const FoodItemDetailScreen: React.FC = () => {
         <Card style={styles.totalCard}>
           <Text style={styles.sectionTitle}>Total Nutrition</Text>
           <View style={styles.totalNutrition}>
-            <TotalNutritionItem
+            <NutritionItem
               label="Calories"
               value={Math.round(totalCalories)}
               unit="cal"
               color={AppColors.warning}
+              size="large"
             />
-            <TotalNutritionItem
+            <NutritionItem
               label="Protein"
               value={totalProtein.toFixed(1)}
               unit="g"
               color={AppColors.info}
+              size="large"
             />
-            <TotalNutritionItem
+            <NutritionItem
               label="Carbs"
               value={totalCarbs.toFixed(1)}
               unit="g"
               color={AppColors.accent}
+              size="large"
             />
-            <TotalNutritionItem
+            <NutritionItem
               label="Fat"
               value={totalFat.toFixed(1)}
               unit="g"
               color={AppColors.secondary}
+              size="large"
             />
           </View>
         </Card>
@@ -256,56 +224,6 @@ export const FoodItemDetailScreen: React.FC = () => {
     </View>
   );
 };
-
-// Helper Components
-
-interface NutritionRowProps {
-  label: string;
-  value: string | number;
-  unit: string;
-  color: string;
-}
-
-const NutritionRow: React.FC<NutritionRowProps> = ({
-  label,
-  value,
-  unit,
-  color,
-}) => (
-  <View style={styles.nutritionRow}>
-    <View style={styles.nutritionRowLeft}>
-      <View style={[styles.nutritionDot, { backgroundColor: color }]} />
-      <Text style={styles.nutritionLabel}>{label}</Text>
-    </View>
-    <View style={styles.nutritionRowRight}>
-      <Text style={styles.nutritionValue}>{value}</Text>
-      <Text style={styles.nutritionUnit}>{unit}</Text>
-    </View>
-  </View>
-);
-
-interface TotalNutritionItemProps {
-  label: string;
-  value: string | number;
-  unit: string;
-  color: string;
-}
-
-const TotalNutritionItem: React.FC<TotalNutritionItemProps> = ({
-  label,
-  value,
-  unit,
-  color,
-}) => (
-  <View style={styles.totalNutritionItem}>
-    <View style={[styles.totalNutritionDot, { backgroundColor: color }]} />
-    <Text style={styles.totalNutritionLabel}>{label}</Text>
-    <Text style={styles.totalNutritionValue}>
-      {value}
-      <Text style={styles.totalNutritionUnit}> {unit}</Text>
-    </Text>
-  </View>
-);
 
 const styles = StyleSheet.create({
   container: {
@@ -447,31 +365,6 @@ const styles = StyleSheet.create({
   },
   totalNutrition: {
     gap: Spacing.md,
-  },
-  totalNutritionItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-  },
-  totalNutritionDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-  },
-  totalNutritionLabel: {
-    flex: 1,
-    fontSize: 15,
-    color: AppColors.label,
-  },
-  totalNutritionValue: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: AppColors.label,
-  },
-  totalNutritionUnit: {
-    fontSize: 13,
-    fontWeight: 'normal',
-    color: AppColors.secondaryLabel,
   },
   saveButtonContainer: {
     padding: Spacing.md,

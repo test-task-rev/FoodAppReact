@@ -36,12 +36,15 @@ const formatError = (err: unknown, defaultMessage: string): string => {
   return err instanceof Error ? err.message : defaultMessage;
 };
 
-export const useWaterData = () => {
+interface UseWaterDataProps {
+  selectedDate: Date;
+}
+
+export const useWaterData = ({ selectedDate }: UseWaterDataProps) => {
   const api = useApi(API_URLS.WATER_LOG_SERVICE);
   const [waterLogs, setWaterLogs] = useState<WaterLog[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedDate, setSelectedDate] = useState(new Date());
 
   const waterGoal = DEFAULT_GOALS.WATER;
 
@@ -79,12 +82,11 @@ export const useWaterData = () => {
     loadWaterData(selectedDate);
   }, [selectedDate, loadWaterData]);
 
-  const addWater = useCallback(async (amount: number): Promise<WaterLog> => {
+  const addWater = useCallback(async (amount: number, consumedAt: Date): Promise<WaterLog> => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const consumedAt = new Date();
       const payload = createWaterLogPayload(amount, consumedAt);
       const response = await api.post<WaterLogResponse>('', payload);
       const newLog = parseWaterLog(response);
@@ -143,17 +145,13 @@ export const useWaterData = () => {
 
   const waterConsumed = waterLogs.reduce((sum, log) => sum + log.amount, 0);
 
-  const getWaterProgress = (): number => {
+  const getWaterProgress = useCallback((): number => {
     return Math.min(1.0, waterConsumed / waterGoal);
-  };
+  }, [waterConsumed, waterGoal]);
 
-  const getWaterRemaining = (): number => {
+  const getWaterRemaining = useCallback((): number => {
     return Math.max(0, waterGoal - waterConsumed);
-  };
-
-  const setDate = (date: Date) => {
-    setSelectedDate(date);
-  };
+  }, [waterGoal, waterConsumed]);
 
   const refresh = useCallback(async (): Promise<void> => {
     return loadWaterData(selectedDate);
@@ -169,13 +167,11 @@ export const useWaterData = () => {
     waterGoal,
     isLoading,
     error,
-    selectedDate,
     addWater,
     removeLastLog,
     deleteWaterLog,
     getWaterProgress,
     getWaterRemaining,
-    setDate,
     refresh,
     clearError,
   };

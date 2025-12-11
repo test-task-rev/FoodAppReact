@@ -15,10 +15,13 @@ import { ActivityIndicator, View, StyleSheet } from 'react-native';
 import { HomeScreen } from './src/lib/component/home/HomeScreen';
 import { ProgressScreen } from './src/lib/component/progress/ProgressScreen';
 import { ProfileScreen } from './src/lib/component/profile/ProfileScreen';
+import { ProfileEditScreen } from './src/lib/component/profile/ProfileEditScreen';
+import { ProfileEditScreen2 } from './src/lib/component/profile/ProfileEditScreen2';
 import { DailySummaryScreen } from './src/lib/component/DailySummaryScreen';
 import { FoodSearchScreen } from './src/lib/component/search/FoodSearchScreen';
 import { FoodItemDetailScreen } from './src/lib/component/search/FoodItemDetailScreen';
 import { CustomTabBar } from './src/lib/component/core/CustomTabBar';
+import { GoalsScreen } from './src/lib/component/goals/GoalsScreen';
 
 // Auth screens
 import { WelcomeScreen } from './src/lib/component/auth/WelcomeScreen';
@@ -48,6 +51,8 @@ export type AppStackParamList = {
     entryDate: Date;
     unitSystem: 'metric' | 'imperial';
   };
+  ProfileEdit: undefined;
+  Goals: undefined;
 };
 
 const Tab = createBottomTabNavigator();
@@ -97,6 +102,16 @@ function AppNavigator() {
         name="FoodItemDetail"
         component={FoodItemDetailScreen}
         options={{ title: 'Food Details' }}
+      />
+      <Stack.Screen
+        name="ProfileEdit"
+        component={ProfileEditScreen}
+        options={{ title: 'Edit Profile' }}
+      />
+      <Stack.Screen
+        name="Goals"
+        component={GoalsScreen}
+        options={{ title: 'Goals' }}
       />
     </Stack.Navigator>
   );

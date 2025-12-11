@@ -113,7 +113,7 @@ export const useExerciseData = ({ selectedDate }: UseExerciseDataProps) => {
       exerciseName: string,
       durationMinutes: number,
       caloriesBurned: number,
-      date: Date = new Date()
+      date: Date
     ): Promise<ExerciseLog> => {
       setIsLoading(true);
       setError(null);

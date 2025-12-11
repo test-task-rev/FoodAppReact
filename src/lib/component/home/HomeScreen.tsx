@@ -9,26 +9,29 @@ import { MealContainer } from './MealContainer';
 import { ExerciseCard } from './ExcerciseCard';
 import { AddExerciseModal } from '../modals/AddExerciseModal';
 import { WeekCalendar } from '../calendar';
-import DatePicker from 'react-native-date-picker';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useExerciseData } from '../../hooks/useExerciseData';
 import { useWaterData } from '../../hooks/useWaterData';
 import { useWeightData } from '../../hooks/useWeightData';
 import { useFoodLog } from '../../hooks/useFoodLog';
 import { MealType } from '../../types/MealType';
 import { FoodLog } from '../../types/FoodLog';
+import { FoodLogModal } from '../modals/FoodLogModal';
 
 const { width: screenWidth } = Dimensions.get('window');
 
 export const HomeScreen: React.FC = () => {
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [showExerciseModal, setShowExerciseModal] = useState(false);
+  const [showEditFoodModal, setShowEditFoodModal] = useState(false);
+  const [selectedFoodLog, setSelectedFoodLog] = useState<FoodLog | null>(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showFullCalendar, setShowFullCalendar] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const navigation = useNavigation();
 
   const exerciseData = useExerciseData({ selectedDate });
-  const waterData = useWaterData();
+  const waterData = useWaterData({ selectedDate });
   const weightData = useWeightData();
   const {
     mealLogs,
@@ -72,7 +75,8 @@ export const HomeScreen: React.FC = () => {
       await exerciseData.addExercise(
         exercise.exerciseName,
         exercise.durationMinutes,
-        exercise.caloriesBurned
+        exercise.caloriesBurned,
+        selectedDate
       );
     } catch (error) {
       Alert.alert('Error', 'Failed to add exercise');
@@ -89,7 +93,7 @@ export const HomeScreen: React.FC = () => {
   };
 
   const handleAddWater = async (amount: number) => {
-    await waterData.addWater(amount);
+    await waterData.addWater(amount, selectedDate);
   };
 
   const handleRemoveWater = async () => {
@@ -117,8 +121,21 @@ export const HomeScreen: React.FC = () => {
   };
 
   const handleEditFood = (log: FoodLog) => {
-    // TODO: Navigate to edit screen
-    console.log('Edit food log', log.foodName);
+    setSelectedFoodLog(log);
+    setShowEditFoodModal(true);
+  };
+
+  const handleEditFoodSuccess = () => {
+    Alert.alert('Success', 'Food log updated successfully!');
+    setShowEditFoodModal(false);
+    setSelectedFoodLog(null);
+  };
+
+  const handleDateChange = (event: any, selectedDateParam?: Date) => {
+    if (selectedDateParam) {
+      setSelectedDate(selectedDateParam);
+    }
+    setShowFullCalendar(false);
   };
 
   return (
@@ -227,21 +244,30 @@ export const HomeScreen: React.FC = () => {
         onSave={handleSaveExercise}
       />
 
-      <DatePicker
-        modal
-        mode="date"
-        open={showFullCalendar}
-        date={selectedDate}
-        onConfirm={(date) => {
-          setSelectedDate(date);
-          setShowFullCalendar(false);
-        }}
-        onCancel={() => setShowFullCalendar(false)}
-        title="Select Date"
-        confirmText="Done"
-        cancelText="Cancel"
-        theme="light"
-      />
+      {showFullCalendar && (
+        <DateTimePicker
+          testID="dateTimePicker"
+          value={selectedDate}
+          mode="date"
+          display="spinner"
+          onChange={handleDateChange}
+        />
+      )}
+
+      {selectedFoodLog && (
+        <FoodLogModal
+          visible={showEditFoodModal}
+          onClose={() => {
+            setShowEditFoodModal(false);
+            setSelectedFoodLog(null);
+          }}
+          mealType={selectedFoodLog.mealType as MealType}
+          date={selectedFoodLog.consumedAt}
+          unitSystem="metric"
+          onSuccess={handleEditFoodSuccess}
+          existingLog={selectedFoodLog}
+        />
+      )}
     </View>
   );
 };

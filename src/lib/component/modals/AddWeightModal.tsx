@@ -9,7 +9,7 @@ import {
   Platform,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import DatePicker from 'react-native-date-picker';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { AppColors } from '../../theme/colors';
 import { Spacing } from '../../theme/spacing';
 import { useWeightFormatter } from '../../hooks/formatters/useWeightFormatter';
@@ -33,6 +33,13 @@ export const AddWeightModal: React.FC<AddWeightModalProps> = ({
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   const weightFormatter = useWeightFormatter(unitSystem);
+
+  const handleDateChange = (event: any, date?: Date) => {
+    if (date) {
+      setSelectedDate(date);
+    }
+    setShowDatePicker(false);
+  };
 
   const handleSave = async () => {
     const weightValue = parseFloat(weight);
@@ -110,21 +117,15 @@ export const AddWeightModal: React.FC<AddWeightModalProps> = ({
           </TouchableOpacity>
         </View>
 
-        <DatePicker
-          modal
-          mode="date"
-          open={showDatePicker}
-          date={selectedDate}
-          onConfirm={(date) => {
-            setSelectedDate(date);
-            setShowDatePicker(false);
-          }}
-          onCancel={() => setShowDatePicker(false)}
-          title="Select Date"
-          confirmText="Done"
-          cancelText="Cancel"
-          theme="light"
-        />
+        {showDatePicker && (
+          <DateTimePicker
+            testID="dateTimePicker"
+            value={selectedDate}
+            mode="date"
+            display="spinner"
+            onChange={handleDateChange}
+          />
+        )}
       </View>
     </Modal>
   );

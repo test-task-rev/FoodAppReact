@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import DatePicker from 'react-native-date-picker';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useOnboarding } from '../../context/OnboardingContext';
 import { Gender, UnitSystem, calculateAge, isValidAge } from '../../types/Onboarding';
 import { useHeightFormatter } from '../../hooks/formatters/useHeightFormatter';
@@ -33,6 +33,13 @@ export const UserProfileStep: React.FC = () => {
 
   const age = calculateAge(data.birthdate);
   const ageValid = isValidAge(data.birthdate);
+
+  const handleDateChange = (event: any, selectedDate?: Date) => {
+    setShowDatePicker(false);
+    if (selectedDate) {
+      dispatch({ type: 'SET_BIRTHDATE', payload: selectedDate });
+    }
+  };
 
   // Handle gender selection
   const handleGenderSelect = (gender: Gender) => {
@@ -113,24 +120,16 @@ export const UserProfileStep: React.FC = () => {
             </Text>
           </TouchableOpacity>
 
-          <DatePicker
-            modal
-            mode="date"
-            open={showDatePicker}
-            date={data.birthdate}
-            onConfirm={(date) => {
-              dispatch({ type: 'SET_BIRTHDATE', payload: date });
-              setShowDatePicker(false);
-            }}
-            onCancel={() => setShowDatePicker(false)}
-            title="Select Your Birthdate"
-            confirmText="Done"
-            cancelText="Cancel"
-            theme="light"
-            maximumDate={
-              new Date(new Date().setFullYear(new Date().getFullYear() - 13))
-            }
-          />
+          {showDatePicker && (
+            <DateTimePicker
+              testID="dateTimePicker"
+              value={data.birthdate}
+              mode="date"
+              display="spinner"
+              maximumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 13))}
+              onChange={handleDateChange}
+            />
+          )}
 
           {ageValid ? (
             <Text style={styles.ageText}>Age: {age} years old</Text>

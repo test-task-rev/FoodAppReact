@@ -61,7 +61,7 @@ export const useWeightData = () => {
 
   useEffect(() => {
     loadWeightData();
-  }, [loadWeightData, weightEntries]);
+  }, [loadWeightData]);
 
   const addWeightEntry = useCallback(async (weight: number, date: Date): Promise<WeightEntry> => {
     setIsLoading(true);
@@ -88,27 +88,27 @@ export const useWeightData = () => {
     }
   }, [api]);
   
-  const getLatestWeight = (): WeightEntry | null => {
+  const getLatestWeight = useCallback((): WeightEntry | null => {
     return weightEntries.length > 0 ? weightEntries[0] : null;
-  };
+  }, [weightEntries]);
 
-  const getWeightForPeriod = (days: number): WeightEntry[] => {
+  const getWeightForPeriod = useCallback((days: number): WeightEntry[] => {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - days);
 
     return weightEntries
       .filter(entry => new Date(entry.date) >= cutoffDate)
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  };
+  }, [weightEntries]);
 
-  const getWeightChange = (days: number): number | null => {
+  const getWeightChange = useCallback((days: number): number | null => {
     const entries = getWeightForPeriod(days);
     if (entries.length < 2) return null;
 
     const first = entries[0];
     const last = entries[entries.length - 1];
     return last.weight - first.weight;
-  };
+  }, [getWeightForPeriod]);
 
   const refresh = useCallback(async (): Promise<void> => {
     return loadWeightData();

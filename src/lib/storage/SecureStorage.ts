@@ -1,4 +1,5 @@
 import * as Keychain from 'react-native-keychain';
+import atob from 'atob';
 
 export interface AuthTokens {
   idToken: string;
@@ -203,20 +204,21 @@ class SecureStorage {
     try {
       const base64Url = token.split('.')[1];
       const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-
-      // Decode base64 for React Native
+  
+      // Decode base64 in React Native
       const jsonPayload = decodeURIComponent(
-        Buffer.from(base64, 'base64')
-          .toString('utf-8')
+        atob(base64)
           .split('')
-          .map((c: string) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
           .join('')
       );
+  
       return JSON.parse(jsonPayload);
     } catch (error) {
       throw new Error('Invalid JWT token format');
     }
   }
+  
 }
 
 export default new SecureStorage();

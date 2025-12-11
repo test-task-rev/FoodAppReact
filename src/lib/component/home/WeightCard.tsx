@@ -43,6 +43,10 @@ export const WeightCard: React.FC<WeightCardProps> = ({
   const [showAddWeight, setShowAddWeight] = useState(false);
   const weightFormatter = useWeightFormatter(unitSystem);
 
+  const handleCloseModal = React.useCallback(() => {
+    setShowAddWeight(false);
+  }, []);
+
   const weightChange = getWeightChange(PERIOD_DAYS[selectedPeriod]);
 
   const renderEmptyState = () => (
@@ -182,7 +186,7 @@ export const WeightCard: React.FC<WeightCardProps> = ({
 
       <AddWeightModal
         visible={showAddWeight}
-        onClose={() => setShowAddWeight(false)}
+        onClose={handleCloseModal}
         onSave={onAddWeight}
         unitSystem={unitSystem}
       />

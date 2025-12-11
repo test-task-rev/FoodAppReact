@@ -1,5 +1,5 @@
 import React, { useState, useLayoutEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { SearchInput } from './SearchInput';
 import { SearchResults } from './SearchResults';
 import { useFoodSearch } from '../../hooks/useFoodSearch';
@@ -9,6 +9,7 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import SegmentedControlTab from 'react-native-segmented-control-tab';
 import { MealType } from '../../types/MealType';
+import { FoodLogModal } from '../modals/FoodLogModal';
 
 export const FoodSearchScreen: React.FC = () => {
   const route = useRoute();
@@ -19,6 +20,7 @@ export const FoodSearchScreen: React.FC = () => {
   const [showMealTypeDropdown, setShowMealTypeDropdown] = useState(false);
   const [selectedTab, setSelectedTab] = useState<number>(0);
   const [myFoodItems, setMyFoodItems] = useState<FoodItem[]>([]);
+  const [showQuickLogModal, setShowQuickLogModal] = useState(false);
 
   const mealTypes = [MealType.Breakfast, MealType.Lunch, MealType.Dinner, MealType.Snack];
 
@@ -75,7 +77,11 @@ export const FoodSearchScreen: React.FC = () => {
   };
 
   const handleQuickLog = () => {
-    console.log('Quick log');
+    setShowQuickLogModal(true);
+  };
+
+  const handleFoodLogSuccess = () => {
+    Alert.alert('Success', 'Food logged successfully!');
   };
 
   const handleCreateFood = () => {
@@ -92,6 +98,7 @@ export const FoodSearchScreen: React.FC = () => {
             mealType: currentMealType,
             entryDate: new Date(),
             unitSystem: 'metric' as const,
+            onSuccess: handleFoodLogSuccess,
           })
         }
       >
@@ -223,6 +230,16 @@ export const FoodSearchScreen: React.FC = () => {
       <View style={styles.tabContent}>
         {renderTabContent()}
       </View>
+
+      {/* Quick Log Modal */}
+      <FoodLogModal
+        visible={showQuickLogModal}
+        onClose={() => setShowQuickLogModal(false)}
+        mealType={currentMealType}
+        date={new Date()}
+        unitSystem="metric"
+        onSuccess={handleFoodLogSuccess}
+      />
     </View>
   );
 };
