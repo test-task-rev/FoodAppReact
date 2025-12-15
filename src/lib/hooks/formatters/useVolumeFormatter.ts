@@ -1,6 +1,7 @@
 import { useUnitFormatter, UnitFormatter } from './useUnitFormatter';
 
 export type VolumeUnit = 'metric' | 'imperial';
+export type VolumeFormatter = UnitFormatter<VolumeUnit>;
 
 const ML_TO_FLOZ = 0.033814;
 

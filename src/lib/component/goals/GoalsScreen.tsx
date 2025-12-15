@@ -12,7 +12,7 @@ import { useNavigation } from '@react-navigation/native';
 import { CurrentGoalCard } from './CurrentGoalCard';
 import { EditGoalCard } from './EditGoalCard';
 import { GoalHistorySection } from './GoalHistorySection';
-import { useGoals } from '../../hooks/useGoals';
+import { useProfile } from '../../hooks/ProfileProvider';
 import { AppColors } from '../../theme/colors';
 import { Spacing } from '../../theme/spacing';
 
@@ -22,13 +22,15 @@ export const GoalsScreen: React.FC = () => {
     currentGoal,
     allGoals,
     goalInput,
-    isLoading,
-    error,
-    hasChanges,
+    isLoadingGoals: isLoading,
+    goalError: error,
+    hasGoalChanges: hasChanges,
     updateGoalInput,
     saveGoal,
-    clearError,
-  } = useGoals();
+    clearErrors,
+  } = useProfile();
+
+  const clearError = () => clearErrors();
 
   const handleSave = useCallback(async () => {
     try {

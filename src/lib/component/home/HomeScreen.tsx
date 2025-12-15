@@ -17,6 +17,7 @@ import { useFoodLog } from '../../hooks/useFoodLog';
 import { MealType } from '../../types/MealType';
 import { FoodLog } from '../../types/FoodLog';
 import { FoodLogModal } from '../modals/FoodLogModal';
+import { useProfile } from '../../hooks/ProfileProvider';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -29,6 +30,7 @@ export const HomeScreen: React.FC = () => {
   const [showFullCalendar, setShowFullCalendar] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const navigation = useNavigation();
+  const { getGoalForDate, getUnitSystem } = useProfile();
 
   const exerciseData = useExerciseData({ selectedDate });
   const waterData = useWaterData({ selectedDate });
@@ -107,9 +109,11 @@ export const HomeScreen: React.FC = () => {
   const totalCaloriesBurned = exerciseData.getTotalCaloriesBurned();
   const totalCaloriesConsumed = getTotalCalories();
   const totalMacros = getTotalMacros();
+  const goalForDate = getGoalForDate(selectedDate);
+  const unitSystem = getUnitSystem();
 
   const handleAddFood = (mealType: MealType) => {
-    navigation.navigate('FoodSearch', { mealType });
+    navigation.navigate('FoodSearch', { mealType, date: selectedDate, unitSystem });
   };
 
   const handleDeleteFood = async (mealType: MealType, log: FoodLog) => {
@@ -173,9 +177,10 @@ export const HomeScreen: React.FC = () => {
             {/* Calorie Card */}
             <View style={styles.cardContainer}>
               <CalorieSummaryCard
-                calorieGoal={2300}
+                calorieGoal={goalForDate?.calorieGoal || 2000}
                 caloriesBurned={totalCaloriesBurned}
                 caloriesConsumed={totalCaloriesConsumed}
+                selectedDate={selectedDate}
               />
             </View>
 
@@ -183,11 +188,11 @@ export const HomeScreen: React.FC = () => {
             <View style={styles.cardContainer}>
               <MacroSummaryCard
                 proteinConsumed={totalMacros.protein}
-                proteinGoal={150}
+                proteinGoal={goalForDate?.proteinGoal || 150}
                 carbsConsumed={totalMacros.carbs}
-                carbsGoal={250}
+                carbsGoal={goalForDate?.carbsGoal || 200}
                 fatConsumed={totalMacros.fat}
-                fatGoal={70}
+                fatGoal={goalForDate?.fatGoal || 65}
               />
             </View>
           </ScrollView>
@@ -221,7 +226,7 @@ export const HomeScreen: React.FC = () => {
             canRemoveWater={waterData.waterLogs.length > 0}
             onAddWater={handleAddWater}
             onRemoveWater={handleRemoveWater}
-            unitSystem="metric"
+            unitSystem={unitSystem}
           />
           <ExerciseCard
             exercises={exerciseData.exercises}
@@ -233,7 +238,7 @@ export const HomeScreen: React.FC = () => {
             getWeightForPeriod={weightData.getWeightForPeriod}
             getWeightChange={weightData.getWeightChange}
             onAddWeight={handleAddWeight}
-            unitSystem="metric"
+            unitSystem={unitSystem}
           />
         </View>
       </ScrollView>
@@ -263,7 +268,7 @@ export const HomeScreen: React.FC = () => {
           }}
           mealType={selectedFoodLog.mealType as MealType}
           date={selectedFoodLog.consumedAt}
-          unitSystem="metric"
+          unitSystem={unitSystem}
           onSuccess={handleEditFoodSuccess}
           existingLog={selectedFoodLog}
         />

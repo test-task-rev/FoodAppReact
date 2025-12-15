@@ -20,7 +20,8 @@ import { ValidatedInput } from '../core/ValidatedInput';
 import { UnitPreferenceToggle } from '../core/UnitPreferenceToggle';
 import { SliderInput } from '../onboarding/SliderInput';
 import { ImperialHeightPicker } from '../onboarding/ImperialHeightPicker';
-import { useProfile, parseGender, parseActivityLevel, parseUnitSystem } from '../../hooks/useProfile';
+import { useProfile } from '../../hooks/ProfileProvider';
+import { parseGender, parseActivityLevel, parseUnitSystem } from '../../hooks/useProfileState';
 import { useHeightFormatter } from '../../hooks/formatters/useHeightFormatter';
 import { nameRules } from '../../validators/nameRules';
 import {
@@ -57,7 +58,7 @@ const ACTIVITY_OPTIONS = [
 
 export const ProfileEditScreen: React.FC = () => {
   const navigation = useNavigation();
-  const { profile, isLoading, fetchProfile, updateProfile } = useProfile();
+  const { profile, isLoadingProfile: isLoading, refreshProfile, updateProfile } = useProfile();
   const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   // State to control the visibility of the DatePicker modal/dialog
@@ -84,14 +85,38 @@ export const ProfileEditScreen: React.FC = () => {
 
   // Load profile on mount
   useEffect(() => {
-    loadProfileData();
-  }, []);
+    if (profile && !isInitialLoading) {
+      // Profile already loaded by context
+      const birthdate = new Date(profile.birthdate);
+
+      const initialState: ProfileFormState = {
+        displayName: profile.displayName,
+        birthdate: birthdate,
+        gender: parseGender(profile.gender as unknown as string),
+        heightCm: profile.heightCm,
+        weightKg: profile.weightKg,
+        activityLevel: parseActivityLevel(profile.activityLevel as unknown as string),
+        unitSystem: parseUnitSystem(profile.unitSystem as unknown as string),
+      };
+
+      setFormState(initialState);
+      setOriginalState({
+        ...initialState,
+        birthdate: new Date(birthdate.getTime())
+      });
+      reset({ displayName: initialState.displayName });
+      setIsInitialLoading(false);
+    } else if (isInitialLoading) {
+      loadProfileData();
+    }
+  }, [profile]);
 
   const loadProfileData = async () => {
     setIsInitialLoading(true);
     try {
-      const profileData = await fetchProfile();
-      if (profileData) {
+      await refreshProfile();
+      if (profile) {
+        const profileData = profile;
         const birthdate = new Date(profileData.birthdate);
 
         const initialState: ProfileFormState = {

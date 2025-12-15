@@ -14,7 +14,11 @@ import { FoodLogModal } from '../modals/FoodLogModal';
 export const FoodSearchScreen: React.FC = () => {
   const route = useRoute();
   const navigation = useNavigation();
-  const { mealType: initialMealType } = route.params as { mealType: MealType };
+  const { mealType: initialMealType, date: entryDate = new Date(), unitSystem = 'metric' } = route.params as {
+    mealType: MealType;
+    date?: Date;
+    unitSystem?: 'metric' | 'imperial';
+  };
 
   const [currentMealType, setCurrentMealType] = useState<MealType>(initialMealType);
   const [showMealTypeDropdown, setShowMealTypeDropdown] = useState(false);
@@ -96,8 +100,8 @@ export const FoodSearchScreen: React.FC = () => {
           (navigation as any).navigate('FoodItemDetail', {
             foodItem: item,
             mealType: currentMealType,
-            entryDate: new Date(),
-            unitSystem: 'metric' as const,
+            entryDate: entryDate,
+            unitSystem: unitSystem,
             onSuccess: handleFoodLogSuccess,
           })
         }
@@ -236,8 +240,8 @@ export const FoodSearchScreen: React.FC = () => {
         visible={showQuickLogModal}
         onClose={() => setShowQuickLogModal(false)}
         mealType={currentMealType}
-        date={new Date()}
-        unitSystem="metric"
+        date={entryDate}
+        unitSystem={unitSystem}
         onSuccess={handleFoodLogSuccess}
       />
     </View>

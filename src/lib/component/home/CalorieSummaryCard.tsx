@@ -10,12 +10,14 @@ interface CalorieSummaryCardProps {
   caloriesConsumed: number;
   caloriesBurned: number;
   calorieGoal: number;
+  selectedDate: Date;
 }
 
 export const CalorieSummaryCard: React.FC<CalorieSummaryCardProps> = ({
   caloriesConsumed,
   caloriesBurned,
   calorieGoal,
+  selectedDate,
 }) => {
   const animatedProgress = useRef(new Animated.Value(0)).current;
   const navigation = useNavigation();
@@ -110,7 +112,7 @@ export const CalorieSummaryCard: React.FC<CalorieSummaryCardProps> = ({
       {/* Daily Summary Button */}
       <TouchableOpacity
         style={styles.summaryButton}
-        onPress={() => navigation.navigate('DailySummary')}
+        onPress={() => navigation.navigate('DailySummary', { date: selectedDate })}
       >
         <Icon name="sparkles" size={ICON_SIZES.MINI} color="#007AFF" />
         <Text style={styles.summaryButtonText}>Daily Summary</Text>

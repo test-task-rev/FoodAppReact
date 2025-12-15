@@ -274,7 +274,7 @@ function formatMonthYear(date: Date): string {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: AppColors.cardBackground,
+    backgroundColor: AppColors.background,
   },
   header: {
     flexDirection: 'row',

@@ -11,13 +11,11 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
 
-// Existing screens
 import { HomeScreen } from './src/lib/component/home/HomeScreen';
 import { ProgressScreen } from './src/lib/component/progress/ProgressScreen';
 import { ProfileScreen } from './src/lib/component/profile/ProfileScreen';
 import { ProfileEditScreen } from './src/lib/component/profile/ProfileEditScreen';
-import { ProfileEditScreen2 } from './src/lib/component/profile/ProfileEditScreen2';
-import { DailySummaryScreen } from './src/lib/component/DailySummaryScreen';
+import { DailySummaryScreen } from './src/lib/component/summary/DailySummaryScreen';
 import { FoodSearchScreen } from './src/lib/component/search/FoodSearchScreen';
 import { FoodItemDetailScreen } from './src/lib/component/search/FoodItemDetailScreen';
 import { CustomTabBar } from './src/lib/component/core/CustomTabBar';
@@ -32,6 +30,7 @@ import { OnboardingNavigator } from './src/lib/component/onboarding/OnboardingNa
 
 // Hooks and Providers
 import { AuthProvider, useAuth } from './src/lib/hooks/AuthProvider';
+import { ProfileProvider } from './src/lib/hooks/ProfileProvider';
 import { OnboardingProvider } from './src/lib/context/OnboardingContext';
 
 // Navigation type definitions (exported for use in screens)
@@ -43,7 +42,7 @@ export type AuthStackParamList = {
 
 export type AppStackParamList = {
   MainTabs: undefined;
-  DailySummary: undefined;
+  DailySummary: { date?: Date };
   FoodSearch: undefined;
   FoodItemDetail: {
     foodItem: any;
@@ -150,11 +149,13 @@ function RootNavigator() {
 function App() {
   return (
     <AuthProvider>
-      <OnboardingProvider>
-        <NavigationContainer>
-          <RootNavigator />
-        </NavigationContainer>
-      </OnboardingProvider>
+      <ProfileProvider>
+        <OnboardingProvider>
+          <NavigationContainer>
+            <RootNavigator />
+          </NavigationContainer>
+        </OnboardingProvider>
+      </ProfileProvider>
     </AuthProvider>
   );
 }
