@@ -15,7 +15,7 @@ export const CustomTabBar: React.FC<BottomTabBarProps> = ({
   const [showAddMenu, setShowAddMenu] = useState(false);
 
   const handleScanMeal = () => {
-    console.log('Scan Meal');
+    navigation.navigate('FoodCamera');
   };
 
   const handleLogFood = () => {
