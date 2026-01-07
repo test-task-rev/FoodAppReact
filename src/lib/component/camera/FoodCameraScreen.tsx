@@ -16,7 +16,7 @@ import {
   PhotoFile,
   CameraRuntimeError,
 } from 'react-native-vision-camera';
-import RNFS from 'react-native-fs';
+import { CameraRoll } from '@react-native-camera-roll/camera-roll';
 import { CameraIntrinsics, PhotoCapture } from '../../types/camera';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -105,13 +105,12 @@ export const FoodCameraScreen: React.FC = () => {
   );
 
   const savePhotoToDevice = useCallback(async (photo: PhotoFile): Promise<string> => {
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const fileName = `food_${timestamp}.jpg`;
-    const destPath = `${RNFS.DocumentDirectoryPath}/${fileName}`;
+    const savedPhoto = await CameraRoll.saveAsset(photo.path, {
+      type: 'photo',
+      album: 'Food Tracker',
+    });
 
-    await RNFS.copyFile(photo.path, destPath);
-
-    return destPath;
+    return savedPhoto.node.image.uri;
   }, []);
 
   const handleCapture = useCallback(async () => {
