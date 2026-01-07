@@ -20,6 +20,7 @@ import { FoodSearchScreen } from './src/lib/component/search/FoodSearchScreen';
 import { FoodItemDetailScreen } from './src/lib/component/search/FoodItemDetailScreen';
 import { CustomTabBar } from './src/lib/component/core/CustomTabBar';
 import { GoalsScreen } from './src/lib/component/goals/GoalsScreen';
+import { FoodCameraScreen } from './src/lib/component/camera/FoodCameraScreen';
 
 // Auth screens
 import { WelcomeScreen } from './src/lib/component/auth/WelcomeScreen';
@@ -44,6 +45,7 @@ export type AppStackParamList = {
   MainTabs: undefined;
   DailySummary: { date?: Date };
   FoodSearch: undefined;
+  FoodCamera: undefined;
   FoodItemDetail: {
     foodItem: any;
     mealType: string;
@@ -96,6 +98,11 @@ function AppNavigator() {
         name="FoodSearch"
         component={FoodSearchScreen}
         options={{ title: 'Search Food' }}
+      />
+      <Stack.Screen
+        name="FoodCamera"
+        component={FoodCameraScreen}
+        options={{ title: 'Food Camera', headerShown: false }}
       />
       <Stack.Screen
         name="FoodItemDetail"
