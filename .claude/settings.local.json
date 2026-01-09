@@ -44,7 +44,8 @@
       "Bash(adb:*)",
       "Bash(emulator:*)",
       "Bash(start emulator:*)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(aws cloudformation:*)"
     ],
     "deny": [],
     "ask": []

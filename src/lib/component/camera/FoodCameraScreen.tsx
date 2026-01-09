@@ -19,8 +19,12 @@ import {
 } from 'react-native-vision-camera';
 import { CameraRoll } from '@react-native-camera-roll/camera-roll';
 import { CameraIntrinsics, PhotoCapture } from '../../types/camera';
+import SecureStorage from '../../storage/SecureStorage';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+
+// Food Volume Service API endpoint
+const FOOD_VOLUME_API_URL = 'https://sk9ckxamhf.execute-api.us-east-1.amazonaws.com/prod/api/v1/volume/estimate';
 
 export const FoodCameraScreen: React.FC = () => {
   const camera = useRef<Camera>(null);
@@ -219,12 +223,65 @@ export const FoodCameraScreen: React.FC = () => {
                 {
                   text: 'Process Video',
                   onPress: async () => {
-                    // TODO: Send video + intrinsics to backend
-                    console.log('Sending to backend:', {
-                      videoPath: savedVideo.node.image.uri,
-                      intrinsics,
-                    });
-                    Alert.alert('Info', 'Backend integration coming soon!');
+                    try {
+                      // Get JWT token
+                      const jwtToken = await SecureStorage.getToken();
+
+                      if (!jwtToken) {
+                        Alert.alert('Error', 'Not authenticated. Please log in.');
+                        return;
+                      }
+
+                      // Show loading alert
+                      Alert.alert('Processing', 'Uploading video for 3D reconstruction...');
+
+                      // Prepare form data
+                      const formData = new FormData();
+                      formData.append('video', {
+                        uri: videoFile.path,
+                        type: 'video/mp4',
+                        name: 'food_video.mp4',
+                      } as any);
+                      formData.append('intrinsics', JSON.stringify(intrinsics));
+
+                      console.log('Uploading video to:', FOOD_VOLUME_API_URL);
+                      console.log('Video path:', videoFile.path);
+                      console.log('Intrinsics:', intrinsics);
+
+                      // Call API
+                      const response = await fetch(FOOD_VOLUME_API_URL, {
+                        method: 'POST',
+                        headers: {
+                          'Authorization': `Bearer ${jwtToken}`,
+                        },
+                        body: formData,
+                      });
+
+                      if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(`API error ${response.status}: ${errorText}`);
+                      }
+
+                      const result = await response.json();
+
+                      console.log('Volume estimation result:', result);
+
+                      // Show success message
+                      Alert.alert(
+                        'Volume Estimated!',
+                        `Volume: ${result.volume_cm3.toFixed(1)} cm³\n` +
+                        `Food: ${result.food_items?.map((i: any) => i.label).join(', ') || 'Unknown'}\n` +
+                        `Confidence: ${(result.confidence * 100).toFixed(0)}%\n` +
+                        `Frames processed: ${result.frames_processed}`,
+                        [{ text: 'OK' }]
+                      );
+                    } catch (error) {
+                      console.error('Volume estimation failed:', error);
+                      Alert.alert(
+                        'Error',
+                        `Failed to estimate volume:\n${error instanceof Error ? error.message : 'Unknown error'}`
+                      );
+                    }
                   },
                 },
                 {
