@@ -2,6 +2,12 @@
 
 @interface RCT_EXTERN_MODULE(CameraIntrinsicsModule, NSObject)
 
+RCT_EXTERN_METHOD(getCameraIntrinsics:(nonnull NSNumber *)width
+                  height:(nonnull NSNumber *)height
+                  position:(NSString *)position
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
 RCT_EXTERN_METHOD(getIntrinsicsFromPhoto:(NSString *)assetId
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)

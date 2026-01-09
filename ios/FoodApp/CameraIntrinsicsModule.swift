@@ -11,6 +11,50 @@ class CameraIntrinsicsModule: NSObject {
   }
 
   @objc
+  func getCameraIntrinsics(_ width: NSNumber,
+                           height: NSNumber,
+                           position: NSString,
+                           resolver: @escaping RCTPromiseResolveBlock,
+                           rejecter: @escaping RCTPromiseRejectBlock) {
+
+    // Get the camera device
+    let devicePosition: AVCaptureDevice.Position = (position as String) == "front" ? .front : .back
+
+    guard let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: devicePosition) else {
+      rejecter("CAMERA_NOT_FOUND", "Camera device not found", nil)
+      return
+    }
+
+    let dimensions = CMVideoDimensions(width: Int32(truncating: width), height: Int32(truncating: height))
+
+    // Get the REAL intrinsic matrix from ARKit factory calibration
+    let intrinsicMatrix = device.intrinsicMatrix(for: dimensions)
+
+    // The intrinsic matrix is a 3x3 matrix in column-major order:
+    // [ fx  0  cx ]
+    // [ 0  fy  cy ]
+    // [ 0   0   1 ]
+    //
+    // In column-major: [fx, 0, 0, 0, fy, 0, cx, cy, 1]
+    let fx = Double(intrinsicMatrix.columns.0.x)
+    let fy = Double(intrinsicMatrix.columns.1.y)
+    let cx = Double(intrinsicMatrix.columns.2.x)
+    let cy = Double(intrinsicMatrix.columns.2.y)
+
+    let result: [String: Any] = [
+      "fx": fx,
+      "fy": fy,
+      "cx": cx,
+      "cy": cy,
+      "width": width,
+      "height": height,
+      "source": "arkit_factory_calibration"
+    ]
+
+    resolver(result)
+  }
+
+  @objc
   func getIntrinsicsFromPhoto(_ assetId: String,
                               resolver: @escaping RCTPromiseResolveBlock,
                               rejecter: @escaping RCTPromiseRejectBlock) {
